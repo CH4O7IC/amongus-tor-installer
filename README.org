@@ -1,0 +1,9 @@
+#+TITLE: Among Us The Other Roles installer
+
+* About this installer
+
+* Setting up the installer
+
+* Setting Up System variables
+
+* Installation
