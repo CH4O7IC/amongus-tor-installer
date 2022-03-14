@@ -1,9 +1,60 @@
-#+TITLE: Among Us The Other Roles installer
+#+TITLE: Among Us - The Other Roles installer
 
 * About this installer
+This installer was created to automatically download a given version of the Among Us - The Other Roles Mod. Created before the mod hosts shipped their own installer as a little side project to automate the process on my old and slow home machine, this installer is not fast, efficient, etc. by any means (please bear that in mind :D).
 
-* Setting up the installer
+
+
+* Setup
+
+Since Windows restricts the usage of any scripts by default, due to security reasons, you will have to do some changes to your configurations before you can use this script.
+There are several ways to be able to run a Powershell script.
+For the purposes of this Installer script I recommend running the cmdlet
+#+begin_src powershell
+$ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
+#+end_src
+in an elevated Powershell process.
+For further reading on this topic I recommend the offical [[[[https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.2]]][MS Set-ExecutionPolicy Documentation]]
 
 * Setting Up System variables
+On starting up the installer checks whether the needed System variables are already initialized.
+If not the installer starts up an elevated shell process to access system level variables.
+If you do not feel good about this you will be able to terminate the process without any changes being done to your system.
+If you choose to abort the process please notice that - as of right now - the installer will not be usable (might change in the future).
+
+
+#+begin_src Powershell
+function Add-PathVar {
+    param (
+        $varName
+    )
+
+    $descVar = 'null'
+    if ($varName -eq 'AmongUsDownloads') {
+        $descVar = 'Ich benötige den Pfad zu einem Ordner, wo die heruntergeladene zip-Datei temporär gespeichert werden kann.
+        '
+    }
+    if ($varName -eq 'SteamCommon') {
+        $descVar = 'Ich benötige den vollständigen Pfad zu Deinem common-Steamordner (endet mit "\Steam\steamapps\common").
+        '
+    }
+
+    if ([System.Environment]::GetEnvironmentVariable($varName, "Machine") -eq $null) {
+        Write-Output $descVar
+        $steamCommonPath = Read-Host -Prompt 'Bitte gib diesen Pfad nun *korrekt!* ein'
+        [Environment]::SetEnvironmentVariable($varName, $steamCommonPath, "Machine")
+        Write-Output '
+        '
+    }
+    while (-NOT (Test-Path ([System.Environment]::GetEnvironmentVariable($varName, "Machine")))) {
+        Write-Output 'Irgendetwas stimmt mit dem angegebenen Pfad nicht...
+        '
+        $steamCommonPath = Read-Host -Prompt 'Bitte gib den Pfad erneut ein und überprüfe ihn bitte gründlich auf Typos'
+        [Environment]::SetEnvironmentVariable($varName, $steamCommonPath, "Machine")
+        Write-Output '
+        '
+    }
+}
+#+end_src
 
 * Installation
