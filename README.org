@@ -61,7 +61,115 @@ do {
 } while (-not $valid)
 #+end_src
 ** Cloning current Among Us installation
+To give you the opportunity to play vanilla Among Us after this installation your current Among Us installation is cloned.
+Later all the Mod files will be moved to this copy.
+To avoid possible bugs any similar named ToR installations will be deleted first - so safe those if necessary.
+#+begin_src Powershell
+$dirOld = "TheOtherRoles-vx.x.x"
+Write-Host ">>> Cleaning previous Other Roles instances
+"
+if (Test-Path $steamPath\$dirOld) {
+Remove-Item -LiteralPath $steamPath\$dirOld -Force -Recurse
+}
+Write-Host "<<< DONE cleaning
+"
+
+
+Write-Host ">>> Copying Among Us installation
+"
+Copy-Item -Path $steamPath\'Among Us' -Destination $steamPath\$dirOld -Recurse
+Write-Host "<<< DONE copying"
+#+end_src
 ** Finding the latest ToR release
+To fetch the latest ToR release tag we will access the Github API. This part is heavily inspired by this Github Gist:
+https://gist.github.com/MarkTiedemann/c0adc1701f3f5c215fc2c2d5b1d5efd3
+
+We will get the latest release tag using curl.exe and some JSON magic.
+After that you will be able to choose whether you want to download the latest version or the version you desire.
+Hitting Enter will result in downloading the latest release. Entering another version in the format of "X.X.X" or "vX.X.X" will make this script try to download your desired version.
+#+begin_src Powershell
+$repo = "Eisbison/TheOtherRoles"
+$file = "TheOtherRoles.zip"
+$releases = "https://api.github.com/repos/$repo/releases"
+Write-Host '>>> Determining latest release'
+$tag = (curl.exe -s $releases | ConvertFrom-Json)[0].tag_name
+Write-Host ''
+$latestTag = $tag
+Write-Host 'Latest version found is ' $tag '. If you want another version please enter it below.'
+Write-Host ''
+$customTag = Read-Host "Version (Enter to skip)"
+if (-not($customTag -eq '')) {
+    if ($customTag -match 'v') {
+        $tag = $customTag
+    } else {
+        $tag = 'v' + $customTag
+    }
+}
+#+end_src
 ** Downloading the latest or a desired release
+After setting the tag for the version which is to be downloaded. We will try to download this version. If the desired version is not valid the script will fallback to downloading the latest Mod version.
+The downloaded zip-folder will be extracted to the cloned Among Us installation.
+#+begin_src Powershell
+$downloaded = $false
+do {
+    $download = "https://github.com/$repo/releases/download/$tag/$file"
+    $name = $file.Split(".")[0]
+    $zip = "$name-$tag.zip"
+    $dir = "$name-$tag"
+
+    Rename-Item $steamPath\$dirOld $steamPath\$dir
+
+    $dirOld = $dir
+
+    Write-Host '>>> Dowloading version ' $tag ' from repository ' $repo
+    Write-Host ''
+    curl.exe -s -LO $download
+    Write-Host "<<< DONE downloading
+    "
+    try {
+        Write-Host '>>> Trying to unzip
+        '
+        Expand-Archive -Path .\$file -DestinationPath $steamPath\$dir
+        $downloaded = $true
+        Write-Host "DONE unzipping
+        "
+    } catch {
+        $downloaded = $false
+        Write-Host '<<< Unzipping failed!'
+        Write-Host '----- Falling back to latest release -----'
+        Write-Host ''
+        Remove-Item -Path .\$file -Force
+        $tag = $latestTag
+    }
+} while (-NOT $downloaded)
+#+end_src
 ** Post cleaning and starting the modded installation
+Now the script will clean up any temporary files like the downloaded zip-folder.
+After that it will start the modded Among Us version. The first start up might take a while.
+#+begin_src Powershell
+Write-Host ">>> Cleaning up zip files
+"
+Remove-Item -Path .\$file -Force
+Remove-Item -LiteralPath $steamPath\'TheOtherRoles-vx.x.x' -Force -Recurse
+Write-Host "<<< DONE cleaning
+"
+& $steamPath\$dir\'Among Us.exe'
+#+end_src
 ** Optional: Creating shortcut
+Lastly you will be able to choose to add a shortcut to your desktop for easier Mod access.
+You can skip this process by typing "NO" or "no".
+#+begin_src Powershell
+Write-Host Do you want a desktop shortcut for your modded version?
+$shct = Read-Host Hit enter for a shortcut, NO for none
+
+if (-NOT ($shct -match 'NO')) {
+    Write-Host ''
+    Write-Host ">>> Creating shortcut
+    "
+    $WshShell = New-Object -ComObject WScript.Shell
+    $Shortcut = $WshShell.CreateShortcut("$env:USERPROFILE\Desktop\$dir.lnk")
+    $Shortcut.TargetPath = "$steamPath\$dir\Among Us.exe"
+    $Shortcut.Save()
+    Write-Host '<<< DONE creating Shortcut'
+}
+#+end_src

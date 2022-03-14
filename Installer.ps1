@@ -33,7 +33,7 @@ $dirOld = "TheOtherRoles-vx.x.x"
 Write-Host ">>> Cleaning previous Other Roles instances
 "
 if (Test-Path $steamPath\$dirOld) {
-    Remove-Item -LiteralPath $steamPath\$dirOld -Force -Recurse
+   Remove-Item -LiteralPath $steamPath\$dirOld -Force -Recurse
 }
 Write-Host "<<< DONE cleaning
 "
