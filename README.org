@@ -1,8 +1,10 @@
 #+TITLE: Among Us - The Other Roles installer
 
 * About this installer
-This installer was created to automatically download a given version of the Among Us - The Other Roles Mod. Created before the mod hosts shipped their own installer as a little side project to automate the process on my old and slow home machine, this installer is not fast, efficient, etc. by any means (please bear that in mind :D).
-
+This installer was created to automatically download a given version of the Among Us - The Other Roles Mod.
+Created before the mod hosts shipped their own installer as a little side project to automate the process on my old and slow home machine.
+This installer is neither fast nor efficient by any means (please bear that in mind :D).
+Since some people might be freaked out to run a stranger's shell script I will explain HOW to use this script and WHAT it is doing step by step.
 
 
 * Setup
@@ -14,47 +16,52 @@ For the purposes of this Installer script I recommend running the cmdlet
 $ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 #+end_src
 in an elevated Powershell process.
-For further reading on this topic I recommend the offical [[[[https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.2]]][MS Set-ExecutionPolicy Documentation]]
-
-* Setting Up System variables
-On starting up the installer checks whether the needed System variables are already initialized.
-If not the installer starts up an elevated shell process to access system level variables.
-If you do not feel good about this you will be able to terminate the process without any changes being done to your system.
-If you choose to abort the process please notice that - as of right now - the installer will not be usable (might change in the future).
-
-
-#+begin_src Powershell
-function Add-PathVar {
-    param (
-        $varName
-    )
-
-    $descVar = 'null'
-    if ($varName -eq 'AmongUsDownloads') {
-        $descVar = 'Ich benötige den Pfad zu einem Ordner, wo die heruntergeladene zip-Datei temporär gespeichert werden kann.
-        '
-    }
-    if ($varName -eq 'SteamCommon') {
-        $descVar = 'Ich benötige den vollständigen Pfad zu Deinem common-Steamordner (endet mit "\Steam\steamapps\common").
-        '
-    }
-
-    if ([System.Environment]::GetEnvironmentVariable($varName, "Machine") -eq $null) {
-        Write-Output $descVar
-        $steamCommonPath = Read-Host -Prompt 'Bitte gib diesen Pfad nun *korrekt!* ein'
-        [Environment]::SetEnvironmentVariable($varName, $steamCommonPath, "Machine")
-        Write-Output '
-        '
-    }
-    while (-NOT (Test-Path ([System.Environment]::GetEnvironmentVariable($varName, "Machine")))) {
-        Write-Output 'Irgendetwas stimmt mit dem angegebenen Pfad nicht...
-        '
-        $steamCommonPath = Read-Host -Prompt 'Bitte gib den Pfad erneut ein und überprüfe ihn bitte gründlich auf Typos'
-        [Environment]::SetEnvironmentVariable($varName, $steamCommonPath, "Machine")
-        Write-Output '
-        '
-    }
-}
-#+end_src
+For further reading on this topic I recommend the offical MS documetation:
+[[https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.2]]
 
 * Installation
+** Finding your "common"-folder
+Since this installer is made for a Steam Among-Us installation. We will need to find the Steam subfolder "Steam\steamapps\common".
+The script tries to find this folder on your C:\ volume:
+First it collects all folders/directories named "common"
+#+begin_src Powershell
+$pathList = (Get-ChildItem -Path C:\ -Filter "common" -Recurse -Directory -ErrorAction SilentlyContinue).Fullname
+#+end_src
+Second it filters this list of paths to match "steamapps\common".
+Since all Steam game folders are subfolders of the "common"-folder this reduces the list to all your Steam games and the desired "common"-folder.
+By implementation the desired directory is the first element of the list
+#+begin_src Powershell
+$steamPath = ($pathList -match "steamapps\\common")[0]
+#+end_src
+
+Next you are asked to confirm the found path to your Steam folder.
+You can confirm the path by hitting enter or change it by typing the full correct path.
+If you changed the path it will be checked whether it is valid by checking if you have a Among Us installation as one of its subfolders.
+If the path is found to be invalid you are asked to enter a new path again.
+#+begin_src Powershell
+Write-Host 'Please confirm that this is your Steam-common folder:
+
+-> ' $steamPath
+Write-Host ''
+Write-Host If this is the wrong folder please enter the full correct path below!
+
+$valid = $true
+do {
+    Write-Host ''
+    $customPath = Read-Host "Path (Enter to skip)"
+    if (-not($customPath -eq '')) {
+        $valid = $false
+        if ((Test-Path $customPath\'Among Us')) {
+            $steamPath = $customPath
+            break
+        }
+        Write-Host $customPath
+        Write-Host This path is not valid. Please try again
+    }
+} while (-not $valid)
+#+end_src
+** Cloning current Among Us installation
+** Finding the latest ToR release
+** Downloading the latest or a desired release
+** Post cleaning and starting the modded installation
+** Optional: Creating shortcut
