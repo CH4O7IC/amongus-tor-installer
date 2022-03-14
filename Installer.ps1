@@ -1,291 +1,137 @@
-﻿# Dieser Installer führt durch die Installation von der Other Roles-Modifikation für Among Us
-# Dazu werden zu Beginn Systemvariablen auf höchster Ebene (Windows) hinzugefügt,
-# weshalb für diesen Schritt eine Admin-Shell geöffnet wird.
+﻿# Source:
+# https://gist.github.com/MarkTiedemann/c0adc1701f3f5c215fc2c2d5b1d5efd3
 
-# Nach dieser Einrichtung wird die Admin-Shell geschlossen und der Installer muss 
-# neu gestartet werden, um die eigentliche Installation zu starten.
-
-# Es ist möglich das Mod-Archiv über den Installer herunterladen zu lassen oder dies zuvor selbst zu tun.
-# Der Installer wird den Nutzer durch diese Schritte führen.
-
-# Nach der Installation werden temporäre Dateien, wie das zip-Archiv wieder entfernt, da sie nicht weiter benötigt werden.
-
-# Es wird bei Bedarft auch eine Verknüpfung auf dem Desktop abgelegt.
-
-# Nach der vollständigen Installation wird die modifizierte Among Us-Version gestartet.
-
-
-# -----------------------------------------------------------------------------------------------------------------------------
-# ------ Anfang Einrichtung Systemvariablen --------------------------------------
-# -----------------------------------------------------------------------------------------------------------------------------
-
-
-# Function for adding Systempath-Variables
-
-function Add-PathVar {
-    param (
-        $varName
-    )
-
-    $descVar = 'null'
-    if ($varName -eq 'AmongUsDownloads') {
-        $descVar = 'Ich benötige den Pfad zu einem Ordner, wo die heruntergeladene zip-Datei temporär gespeichert werden kann.
-        '
-    }
-    if ($varName -eq 'SteamCommon') {
-        $descVar = 'Ich benötige den vollständigen Pfad zu Deinem common-Steamordner (endet mit "\Steam\steamapps\common").
-        '
-    }
-
-    if ([System.Environment]::GetEnvironmentVariable($varName, "Machine") -eq $null) {
-        Write-Output $descVar
-        $steamCommonPath = Read-Host -Prompt 'Bitte gib diesen Pfad nun *korrekt!* ein'
-        [Environment]::SetEnvironmentVariable($varName, $steamCommonPath, "Machine")
-        Write-Output '
-        '
-    }
-    while (-NOT (Test-Path ([System.Environment]::GetEnvironmentVariable($varName, "Machine")))) {
-        Write-Output 'Irgendetwas stimmt mit dem angegebenen Pfad nicht...
-        '
-        $steamCommonPath = Read-Host -Prompt 'Bitte gib den Pfad erneut ein und überprüfe ihn bitte gründlich auf Typos'
-        [Environment]::SetEnvironmentVariable($varName, $steamCommonPath, "Machine") 
-        Write-Output '
-        '
-    }
-}
-
-
-
-
-# Systemvariablen für einen Downloads-Ordner und zu dem Steam-Common-Ordner sind notwendig, damit nicht bei jeder neuen Installation die PATHS abgefragt werden müssen.
-
-# Existieren besagte Variablen noch nicht, so wird einer Admin-Shell geöffnet, wo die Einrichtung stattfinden kann. (Systemvariablen können nicht über eine normale Shell erstellt werden)
-
-# Existieren besagte Variablen bereits, wird dieser Schritt übersprungen
-
-if (([System.Environment]::GetEnvironmentVariable('SteamCommon', "Machine") -eq $null) -or ([System.Environment]::GetEnvironmentVariable('AmongUsDownloads', "Machine") -eq $null)) {
-
-
-    if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        # Relaunch as an elevated process:
-        Start-Process powershell.exe "-File",('"{0}"' -f $MyInvocation.MyCommand.Path) -Verb RunAs
-        exit     
-    }
-    Write-Output 'Hallo!
-
-Ich bin der AmongUsModInstaller. Ich helfe Dir beim Installieren von Among Us Mods.
-
-Da ich ein paar Änderungen an deinen Systemvariablen vornehmen muss, habe ich eine Adminshell geöffnet.
-
-************************************************
-INFO: Ich bin eigentlich auf die Steamversion von Among Us zugeschnitten.
-Vielleicht klappt das Setup auch mit ähnlichen Pfaden für andere Plattformen...
-Dies wurde allerdings nicht getestet.
-************************************************ 
+Write-Host ''
+Write-Host '>>> Trying to locate your Steam-common folder
 '
+$pathList = (Get-ChildItem -Path C:\ -Filter "common" -Recurse -Directory -ErrorAction SilentlyContinue).Fullname
+$steamPath = ($pathList -match "steamapps\\common")[0]
+Write-Host 'Please confirm that this is your Steam-common folder:
 
-$agreementQuest = Read-Host 'Sollte Dir das nicht gefallen, antworte jetzt bitte mit "NO", um das Setup abzubrechen. 
-Habe ich deine Zustimmung, kannst du irgendetwas eingeben oder auch einfach Enter drücken'
-    if ($agreementQuest -eq 'NO') {
-        Write-Output '
-Das ist schade...
-Ich wünsch Dir was!'
-        Start-Sleep -s 7
-        break
-    }
-    Write-Output '
+-> ' $steamPath
+Write-Host ''
+Write-Host If this is the wrong folder please enter the full correct path below!
 
-
-'
-
-    
-    # Setup für zukünftige Sitzungen und Vermeidung der Notwendigkeit Änderungen am Sourcecode vorzunehmen
-    # Hinzufügen von SteamCommon bzw. AmongUsDownloads zum PATH, sollte dies nicht bereits existent sein
-
-    if ([System.Environment]::GetEnvironmentVariable('SteamCommon', "Machine") -eq $null) {
-        Add-PathVar -varName 'SteamCommon'
-    }
-    if ([System.Environment]::GetEnvironmentVariable('AmongUsDownloads', "Machine") -eq $null) {
-        Add-PathVar -varName 'AmongUsDownloads'
-    }
-
-    Write-Output 'Toll! Alle Systemvariablen wurden gesetzt. Bitte starte den Installer gleich wieder neu, damit wir fortfahren können.'
-    Start-Sleep -s 10
-
-    break
-
-    # Der Installer wird nun beendet und muss neu gestartet werden, um die eigentliche Installation durchzuführen
-}
-
-
-
-# -----------------------------------------------------------------------------------------------------------------------------
-# ------ Ende Einrichtung Systemvariablen --------------------------------------
-# -----------------------------------------------------------------------------------------------------------------------------
-# ------ Anfang Installation ---------------------------------------------------
-# -----------------------------------------------------------------------------------------------------------------------------
-
-
-
-# Abfragen der erstellten Systemvariablen
-
-$steamPath = [System.Environment]::GetEnvironmentVariable("SteamCommon", "Machine") 
-$downloadPath = [System.Environment]::GetEnvironmentVariable("AmongUsDownloads", "Machine")
-
-Write-Output '
-Hello again!
-Dann wollen wir mal mit der eigentlichen Installation beginnen!
-'
-
-# Für die Installation reicht die Eingabe der Other Roles-Version nach GitHub-Nummerierung (bspw. 3.1.2 oder 2.0.1)
-
-$version = Read-Host 'Bitte verrate mir, welche Version der (OtherRoles) Mod du installieren möchtest (z.B. "3.1.2")'
-
-# Die Version wird auch benötigt, wenn das zip-Archiv heruntergeladen wurde, da die Ordnernamen je nach Version einen angepassten Namen erhalten
-
-Write-Output '
-Nun möchte ich etwas wissen: Hast du das zip-Archiv,welches die enthält Mods bereits heruntergeladen?'
-$webCheck = Read-Host -Prompt '
-Sollte dies der Fall sein, antworte bitte mit "YES". Sonst kannst du einfach "Enter" drücken'
-
-# Wenn das Archiv heruntergeladen wurde, heißt es im default-case "TheOtherRoles.zip"
-# Wurde dieses umbenannt, so ist der Nutzer aufgefordert dies anzugeben.
-
-if ($webCheck -eq 'YES') {
-    Write-Output '
-Du hast also das zip-Archiv bereits heruntergeladen.
-Dann gehe ich davon aus, dass das Archiv "TheOtherRoles.zip" heißt.'
-    $zipFile = 'TheOtherRoles.zip'
-
-    $zipQuest = Read-Host '
-Sollte dies nicht der Fall sein, verrate mir bitte, wie die Datei heißt (inklusive .zip-Endung). 
-Sonst drücke bitte einfach "Enter"'
-    if (-NOT ($zipQuest -eq '')) {
-        $zipFile = $zipQuest
-    }
-    
-    $zipPath = "$downloadPath\$zipFile"
-}
-if (-NOT ($webCheck -eq 'YES')) {
-    Write-Output '
-Du hast das Archiv also noch nicht heruntergeladen.
-Dann werde ich das für dich übernehmen.
-    '
-
-    $zipFile = 'TheOtherRoles.zip'
-
-    $webSource = 'https://github.com/Eisbison/TheOtherRoles/releases/download/v'+$version+'/TheOtherRoles.zip'
-    
-    $zipPath = "$downloadPath\$zipFile"
-    Write-Output '>>>>>> Cleaning zip-Files
-        '
-
-    if (Test-Path -Path $zipPath) {
-        Remove-Item $zipPath
-    }
-    Write-Output '<<<<<< DONE cleaning zip-Files
-    
->>>>>> Downloading
-    '
-    $check = $true
-    do {
-        try {
-#            Invoke-WebRequest -Uri $webSource -OutFile $zipPath
-            Invoke-WebRequest -Uri $webSource -OutFile $zipPath
-            $check = $true
-        } catch {
-            $check = $false
-            Write-Output 'Ich kann die angegebene Version nicht finden / herunterladen.
-            Bitte überprüfe ob
-            ' + $webSource + '
-            der richtige Link zur Datei ist.
-            '
-            $webSource = Read-Host 'Wenn ja dann versuche füge ihn bitte nochmal ein oder korrigiere den Link bitte!'
-            Write-Output '
-            '
+$valid = $true
+do {
+    Write-Host ''
+    $customPath = Read-Host "Path (Enter to skip)"
+    if (-not($customPath -eq '')) {
+        $valid = $false
+        if ((Test-Path $customPath\'Among Us')) {
+            $steamPath = $customPath
+            break
         }
-    } while (-NOT $check)
-    Write-Output '<<<<<< DONE downloading
-    '
+        Write-Host $customPath
+        Write-Host This path is not valid. Please try again
+    }
+} while (-not $valid)
+
+
+
+$dirOld = "TheOtherRoles-vx.x.x"
+Write-Host ">>> Cleaning previous Other Roles instances
+"
+if (Test-Path $steamPath\$dirOld) {
+    Remove-Item -LiteralPath $steamPath\$dirOld -Force -Recurse
+}
+Write-Host "<<< DONE cleaning
+"
+
+
+Write-Host ">>> Copying Among Us installation
+"
+Copy-Item -Path $steamPath\'Among Us' -Destination $steamPath\$dirOld -Recurse
+Write-Host "<<< DONE copying"
+
+
+$repo = "Eisbison/TheOtherRoles"
+$file = "TheOtherRoles.zip"
+$releases = "https://api.github.com/repos/$repo/releases"
+Write-Host '>>> Determining latest release'
+$tag = (curl.exe -s $releases | ConvertFrom-Json)[0].tag_name
+Write-Host ''
+$latestTag = $tag
+Write-Host 'Latest version found is ' $tag '. If you want another version please enter it below.'
+Write-Host ''
+$customTag = Read-Host "Version (Enter to skip)"
+if (-not($customTag -eq '')) {
+    if ($customTag -match 'v') {
+        $tag = $customTag
+    } else {
+        $tag = 'v' + $customTag
+    }
 }
 
-$versionUnder = $version -replace '\.', '_'
 
-# Name für kopierten Ordner
-Write-Output 'Damit Du Among Us auch weiterhin ohne Mods spielen kannst, werde ich eine Kopie des Among Us Ordners anfertigen.
-Hier wird dann auch das zip-Archiv entpackt.
-Du findest den Ordner unter dem Namen TheOtherRoles_<version> in deinem steamapps/common-Ordner.
-'
 
-$newFolder = 'TheOtherRoles_'+$versionUnder
+$downloaded = $false
+do {
+    $download = "https://github.com/$repo/releases/download/$tag/$file"
+    $name = $file.Split(".")[0]
+    $zip = "$name-$tag.zip"
+    $dir = "$name-$tag"
 
-Write-Output '>>>>>> Cleaning AU Mod installations from simmilar named versions
-'
-if (Test-Path $steamPath\$newFolder) {
-    Remove-Item -LiteralPath $steamPath\$newFolder -Force -Recurse
-}
-Write-Output '<<<<<< DONE cleaning
-'
+    Rename-Item $steamPath\$dirOld $steamPath\$dir
 
-Write-Output '>>>>>> Copying from plain AU directory
-'
+    $dirOld = $dir
 
-Copy-Item -Path $steamPath\'Among Us' -Destination $steamPath\$newFolder -Recurse
-
-Write-Output '<<<<<< DONE copying
-'
-
-# Entpacken der zip-Archivs in den kopierten Among Us Ordner
-if (-NOT (Test-Path $zipPath)) {
-    Write-Output 'Überprüfe bitte, ob sich die zip-Datei wirklich im bei den Variablen angegebenen Download-Ordner befindet.'
-    break
-}
-
-Write-Output '>>>>>> Unzipping zip-File to copied directory
-'
-Expand-Archive -LiteralPath $zipPath -DestinationPath $steamPath\$newFolder
-Write-Output '<<<<<< DONE unzipping
-
->>>>>> Cleaning zip-Files
-'
-
-# Entfernen des Archivs, um Fehler bei gleicher Benennung mehrerer Dateien zu vermeiden
-Remove-Item $zipPath
-Write-Output '<<<<<< DONE cleaning
-'
-
-# Hinzufügen einer Verknüpfung auf den Desktop
-$shctQuest = Read-Host -Prompt 'Möchtest Du eine Verknüpfung erstellt bekommen?
-Wenn ja, dann drücke einfach Enter, wenn nicht, dann Antworte bitte mit "NO"'
-if (-NOT ($shctQuest -eq 'NO')) {
-    Write-Output '
->>>>>> Creating Shortcut
+    Write-Host '>>> Dowloading version ' $tag ' from repository ' $repo
+    Write-Host ''
+    curl.exe -s -LO $download
+    Write-Host "<<< DONE downloading
+    "
+    try {
+        Write-Host '>>> Trying to unzip
         '
+        Expand-Archive -Path .\$file -DestinationPath $steamPath\$dir
+        $downloaded = $true
+        Write-Host "DONE unzipping
+        "
+    } catch {
+        $downloaded = $false
+        Write-Host '<<< Unzipping failed!'
+        Write-Host '----- Falling back to latest release -----'
+        Write-Host ''
+        Remove-Item -Path .\$file -Force
+        $tag = $latestTag
+    }
+} while (-NOT $downloaded)
+
+
+Write-Host ">>> Cleaning up zip files
+"
+Remove-Item -Path .\$file -Force
+Write-Host "<<< DONE cleaning
+"
+
+
+Write-Host Do you want a desktop shortcut for your modded version?
+$shct = Read-Host Hit enter for a shortcut, NO for none
+
+if (-NOT ($shct -match 'NO')) {
+    Write-Host ''
+    Write-Host ">>> Creating shortcut
+    "
     $WshShell = New-Object -ComObject WScript.Shell
-    $Shortcut = $WshShell.CreateShortcut("$env:USERPROFILE\Desktop\$newFolder.lnk")
-    $Shortcut.TargetPath = "$steamPath\$newFolder\Among Us.exe"
+    $Shortcut = $WshShell.CreateShortcut("$env:USERPROFILE\Desktop\$dir.lnk")
+    $Shortcut.TargetPath = "$steamPath\$dir\Among Us.exe"
     $Shortcut.Save()
-    Write-Output '<<<<<< DONE creating Shortcut'
+    Write-Host '<<< DONE creating Shortcut'
 }
 
 
-
-
-# Starten der gemoddeten Among Us Version
-& $steamPath\$newFolder\'Among Us.exe'
+& $steamPath\$dir\'Among Us.exe'
 
 Write-Output '
 *************************************************************************************
-Das Setup ist abgeschlossen und das Spiel wird gestartet.
-Wenn Du Dich für eine Verknüpfung entschieden hast, findest du sie auf Deinem Desktop.
+The setup is complete!
+If you chose for a shortcut you will find it on your desktop.
 
-Viel Spaß!
-*************************************************************************************'
+Have fun!
+*************************************************************************************
+'
     
-# -----------------------------------------------------------------------------------------------------------------------------
-# ------ Ende Installation ---------------------------------------------------
-# -----------------------------------------------------------------------------------------------------------------------------
-
 # SIG # Begin signature block
 # MIIFjQYJKoZIhvcNAQcCoIIFfjCCBXoCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
