@@ -1,5 +1,18 @@
 #+TITLE: Among Us - The Other Roles installer
-#+OPTIONS: toc:2
+
+* Contents :TOC:
+- [[#about-this-installer][About this installer]]
+- [[#setup][Setup]]
+  - [[#enable-powershell-scripts][Enable Powershell scripts]]
+  - [[#fetching-the-installer][Fetching the installer]]
+  - [[#starting-the-script][Starting the script]]
+- [[#installation][Installation]]
+  - [[#finding-your-common-folder][Finding your "common"-folder]]
+  - [[#cloning-current-among-us-installation][Cloning current Among Us installation]]
+  - [[#finding-the-latest-tor-release][Finding the latest ToR release]]
+  - [[#downloading-the-latest-or-a-desired-release][Downloading the latest or a desired release]]
+  - [[#post-cleaning-and-starting-the-modded-installation][Post cleaning and starting the modded installation]]
+  - [[#optional-creating-shortcut][Optional: Creating shortcut]]
 
 * About this installer
 This installer was created to automatically download a given version of the Among Us - The Other Roles Mod.
@@ -9,7 +22,7 @@ Since some people might be freaked out to run a stranger's shell script I will e
 
 
 * Setup
-
+** Enable Powershell scripts
 Since Windows restricts the usage of any scripts by default, due to security reasons, you will have to do some changes to your configurations before you can use this script.
 There are several ways to be able to run a Powershell script.
 For the purposes of this Installer script I recommend running the cmdlet
@@ -19,6 +32,16 @@ $ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 in an elevated Powershell process.
 For further reading on this topic I recommend the offical MS documetation:
 [[https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.2]]
+
+** Fetching the installer
+Download the zipped folder "amongus-tor-installer" from the releases page of this repo.
+
+** Starting the script
+To start this script you can choose from two possibilities:
+1. Use the file explorer and navigate to the downloaded and unzipped "amongus-tor-installer" folder.
+   Right-click "Installer.ps1" and Click "Run with Powershell".
+2. Open up Powershell (e.g. via search) and change to your downloaded and unzipped "amongus-tor-installer" folder (looks probably something like "cd (C:\$HOME)\Downloads\amongus-tor-installer").
+   If done correctly you can run the script by typing ".\Installer.ps1".
 
 * Installation
 ** Finding your "common"-folder
