@@ -105,8 +105,7 @@ Copy-Item -Path $steamPath\'Among Us' -Destination $steamPath\$dirOld -Recurse
 Write-Host "<<< DONE copying"
 #+end_src
 ** Finding the latest ToR release
-To fetch the latest ToR release tag we will access the Github API. This part is heavily inspired by this Github Gist:
-https://gist.github.com/MarkTiedemann/c0adc1701f3f5c215fc2c2d5b1d5efd3
+To fetch the latest ToR release tag we will access the Github API. This part is heavily inspired by [[https://gist.github.com/MarkTiedemann/c0adc1701f3f5c215fc2c2d5b1d5efd3][this]] Github Gist:
 
 We will get the latest release tag using curl.exe and some JSON magic.
 After that you will be able to choose whether you want to download the latest version or the version you desire.
