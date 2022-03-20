@@ -34,7 +34,8 @@ For further reading on this topic I recommend the offical MS documetation:
 [[https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.2]]
 
 ** Fetching the installer
-Download the zipped folder "amongus-tor-installer" from the releases page of this repo.
+Download "Installer.zip" from the releases page of this repo.
+Unzip it to any folder you like - just remember it. :D
 
 ** Starting the script
 To start this script you can choose from two possibilities:
