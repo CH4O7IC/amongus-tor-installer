@@ -1,4 +1,5 @@
 #+TITLE: Among Us - The Other Roles installer
+#+OPTIONS: toc:2
 
 * About this installer
 This installer was created to automatically download a given version of the Among Us - The Other Roles Mod.
