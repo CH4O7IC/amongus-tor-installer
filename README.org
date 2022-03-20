@@ -30,11 +30,10 @@ For the purposes of this Installer script I recommend running the cmdlet
 $ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 #+end_src
 in an elevated Powershell process.
-For further reading on this topic I recommend the offical MS documetation:
-[[https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.2]]
+For further reading on this topic I recommend the offical [[https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.2][MS PowerShell Documentation]]
 
 ** Fetching the installer
-Download [[this](https://github.com/CH4O7IC/amongus-tor-installer/releases/download/v1.1.0/Installer.zip)] zip-archive from the release page.
+Download [[https://github.com/CH4O7IC/amongus-tor-installer/releases/download/v1.1.0/Installer.zip][this]] zip-archive from the release page.
 Unzip it to any folder you like - just remember it. :D
 
 ** Starting the script
