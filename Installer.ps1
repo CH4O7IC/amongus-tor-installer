@@ -32,7 +32,7 @@ $dirOld = "TheOtherRoles-vx.x.x"
 Write-Host ">>> Cleaning previous Other Roles instances
 "
 if (Test-Path $steamPath\$dirOld) {
-    Remove-Item -LiteralPath $steamPath\$dirOld -Force -Recurse
+   Remove-Item -LiteralPath $steamPath\$dirOld -Force -Recurse
 }
 Write-Host "<<< DONE cleaning
 "
@@ -101,8 +101,10 @@ do {
 Write-Host ">>> Cleaning up zip files
 "
 Remove-Item -Path .\$file -Force
+Remove-Item -LiteralPath $steamPath\'TheOtherRoles-vx.x.x' -Force -Recurse
 Write-Host "<<< DONE cleaning
 "
+& $steamPath\$dir\'Among Us.exe'
 
 
 Write-Host Do you want a desktop shortcut for your modded version?
@@ -120,7 +122,6 @@ if (-NOT ($shct -match 'NO')) {
 }
 
 
-& $steamPath\$dir\'Among Us.exe'
 
 Write-Output '
 *************************************************************************************
