@@ -1,14 +1,13 @@
 ﻿# Source:
 # https://gist.github.com/MarkTiedemann/c0adc1701f3f5c215fc2c2d5b1d5efd3
 
-Write-Host ''
-Write-Host '>>> Trying to locate your Steam-common folder
-'
-$pathList = (Get-ChildItem -Path C:\ -Filter "common" -Recurse -Directory -ErrorAction SilentlyContinue).Fullname
-$steamPath = ($pathList -match "steamapps\\common")[0]
+$installInfo = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq 'Among Us' }
+$steamPath = (Get-Item $installInfo.InstallLocation).parent.FullName
 Write-Host 'Please confirm that this is your Steam-common folder:
 
 -> ' $steamPath
+
+
 Write-Host ''
 Write-Host If this is the wrong folder please enter the full correct path below!
 
