@@ -21,16 +21,16 @@ This Powershell script is made for the common Windows user.
 
 I do NOT guarantee for it to be working on other platforms with Powershell installed.
 
-Created before the mod hosts shipped their own installer as a little side project to automate the process on my old and slow home machine.
-
-This installer is neither fast nor efficient by any means (please bear that in mind :D).
+Created, before the mod hosts shipped their own installer, as a little side project to automate the installation process on my old and slow home machine this installer is neither fast nor efficient by any means (please bear that in mind :D).
 
 Since some people might be freaked out to run a stranger's shell script I will explain HOW to use this script and WHAT it is doing step by step.
 
 
 * Setup
 ** Enable Powershell scripts
-Since Windows restricts the usage of any scripts by default, due to security reasons, you will have to do some changes to your configurations before you can use this script.
+Due to security reasons, Windows restricts the usage of any Powershell scripts by default.
+
+That's why you will need to do some changes to your Powershell config to be able to run this script.
 
 There are several ways to be able to run a Powershell script.
 
