@@ -41,7 +41,8 @@ Write-Host "<<< DONE cleaning
 Write-Host ">>> Copying Among Us installation
 "
 Copy-Item -Path $steamPath\'Among Us' -Destination $steamPath\$dirOld -Recurse
-Write-Host "<<< DONE copying"
+Write-Host "<<< DONE copying
+"
 
 
 $repo = "Eisbison/TheOtherRoles"
@@ -62,7 +63,7 @@ if (-not($customTag -eq '')) {
     }
 }
 
-
+Write-Host ""
 
 $downloaded = $false
 do {
@@ -70,6 +71,14 @@ do {
     $name = $file.Split(".")[0]
     $zip = "$name-$tag.zip"
     $dir = "$name-$tag"
+
+    Write-Host ">>> Cleaning possible conflicting Other Roles instances
+    "
+    if (Test-Path $steamPath\$dir) {
+        Remove-Item -LiteralPath $steamPath\$dir -Force -Recurse
+    }
+    Write-Host "<<< DONE cleaning
+    "
 
     Rename-Item $steamPath\$dirOld $steamPath\$dir
 
@@ -101,7 +110,9 @@ do {
 Write-Host ">>> Cleaning up zip files
 "
 Remove-Item -Path .\$file -Force
-Remove-Item -LiteralPath $steamPath\'TheOtherRoles-vx.x.x' -Force -Recurse
+if (Test-Path $steamPath\'TheOtherRoles-vx.x.x') {
+    Remove-Item -LiteralPath $steamPath\'TheOtherRoles-vx.x.x' -Force -Recurse
+}
 Write-Host "<<< DONE cleaning
 "
 & $steamPath\$dir\'Among Us.exe'
