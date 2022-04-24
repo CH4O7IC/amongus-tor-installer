@@ -16,51 +16,71 @@
 
 * About this installer
 This installer was created to automatically download a given version of the Among Us - The Other Roles Mod.
-Created before the mod hosts shipped their own installer as a little side project to automate the process on my old and slow home machine.
-This installer is neither fast nor efficient by any means (please bear that in mind :D).
+
+This Powershell script is made for the common Windows user.
+
+I do NOT guarantee for it to be working on other platforms with Powershell installed.
+
+Created, before the mod hosts shipped their own installer, as a little side project to automate the installation process on my old and slow home machine this installer is neither fast nor efficient by any means (please bear that in mind :D).
+
 Since some people might be freaked out to run a stranger's shell script I will explain HOW to use this script and WHAT it is doing step by step.
 
 
 * Setup
 ** Enable Powershell scripts
-Since Windows restricts the usage of any scripts by default, due to security reasons, you will have to do some changes to your configurations before you can use this script.
+Due to security reasons, Windows restricts the usage of any Powershell scripts by default.
+
+That's why you will need to do some changes to your Powershell config to be able to run this script.
+
 There are several ways to be able to run a Powershell script.
+
 For the purposes of this Installer script I recommend running the cmdlet
 #+begin_src powershell
 $ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 #+end_src
-in an elevated Powershell process.
+in an elevated Powershell process (it does not work in a normal Powershell process).
+
 For further reading on this topic I recommend the offical [[https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.2][MS PowerShell Documentation]]
 
 ** Fetching the installer
-Download [[https://github.com/CH4O7IC/amongus-tor-installer/releases/download/v1.1.0/Installer.zip][this]] zip-archive from the release page.
+Download [[https://github.com/CH4O7IC/amongus-tor-installer/releases/download/v1.2.0/Installer.zip][this]] zip-archive from the release page.
+
 Unzip it to any folder you like - just remember it. :D
 
 ** Starting the script
 To start this script you can choose from two possibilities:
-1. Use the file explorer and navigate to the downloaded and unzipped "amongus-tor-installer" folder.
+1. Use the file explorer and navigate to the downloaded and unzipped "Installer" folder.
    Right-click "Installer.ps1" and Click "Run with Powershell".
-2. Open up Powershell (e.g. via search) and change to your downloaded and unzipped "amongus-tor-installer" folder (looks probably something like "cd (C:\$HOME)\Downloads\amongus-tor-installer").
-   If done correctly you can run the script by typing ".\Installer.ps1".
+2. Open up Powershell (e.g. via search) and change to your downloaded and unzipped "Installer" folder, which should look somewhat similar to this:
+   #+begin_src Powershell
+$ cd C:\Users\username\Downloads\Installer
+   #+end_src
+   Of course this highly depends on your configuration where you save downloaded files and where you unzipped the "Installer.zip".
+
+   If done correctly you can run the script by typing
+   #+begin_src powershell
+$ .\Installer.ps1
+   #+end_src
 
 * Installation
 ** Finding your "common"-folder
-Since this installer is made for a Steam Among-Us installation. We will need to find the Steam subfolder "Steam\steamapps\common".
-The script tries to find this folder on your C:\ volume:
-First it collects all folders/directories named "common"
+This installer is written to work with the Steam installation of Among Us.
+
+However after changing the way how the plain Among Us installation is found it might also work with other installations like Epic Games (yet to be tested).
+
+To find the common folder the installer first tries to find your Among Us installation and saves the parent directory:
 #+begin_src Powershell
-$pathList = (Get-ChildItem -Path C:\ -Filter "common" -Recurse -Directory -ErrorAction SilentlyContinue).Fullname
+$installInfo = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq 'Among Us' }
+$steamPath = (Get-Item $installInfo.InstallLocation).parent.FullName
 #+end_src
-Second it filters this list of paths to match "steamapps\common".
-Since all Steam game folders are subfolders of the "common"-folder this reduces the list to all your Steam games and the desired "common"-folder.
-By implementation the desired directory is the first element of the list
-#+begin_src Powershell
-$steamPath = ($pathList -match "steamapps\\common")[0]
-#+end_src
+This procedure is inspired by [[https://keestalkstech.com/2017/10/powershell-snippet-check-if-software-is-installed/][this website]].
 
 Next you are asked to confirm the found path to your Steam folder.
+
 You can confirm the path by hitting enter or change it by typing the full correct path.
-If you changed the path it will be checked whether it is valid by checking if you have a Among Us installation as one of its subfolders.
+
+If you changed the path it will be checked whether it is valid by checking if you have an Among Us installation as one of its subfolders.
+
 If the path is found to be invalid you are asked to enter a new path again.
 #+begin_src Powershell
 Write-Host 'Please confirm that this is your Steam-common folder:
@@ -86,7 +106,9 @@ do {
 #+end_src
 ** Cloning current Among Us installation
 To give you the opportunity to play vanilla Among Us after this installation your current Among Us installation is cloned.
+
 Later all the Mod files will be moved to this copy.
+
 To avoid possible bugs any similar named ToR installations will be deleted first - so safe those if necessary.
 #+begin_src Powershell
 $dirOld = "TheOtherRoles-vx.x.x"
@@ -108,7 +130,9 @@ Write-Host "<<< DONE copying"
 To fetch the latest ToR release tag we will access the Github API. This part is heavily inspired by [[https://gist.github.com/MarkTiedemann/c0adc1701f3f5c215fc2c2d5b1d5efd3][this]] Github Gist:
 
 We will get the latest release tag using curl.exe and some JSON magic.
+
 After that you will be able to choose whether you want to download the latest version or the version you desire.
+
 Hitting Enter will result in downloading the latest release. Entering another version in the format of "X.X.X" or "vX.X.X" will make this script try to download your desired version.
 #+begin_src Powershell
 $repo = "Eisbison/TheOtherRoles"
@@ -131,6 +155,7 @@ if (-not($customTag -eq '')) {
 #+end_src
 ** Downloading the latest or a desired release
 After setting the tag for the version which is to be downloaded. We will try to download this version. If the desired version is not valid the script will fallback to downloading the latest Mod version.
+
 The downloaded zip-folder will be extracted to the cloned Among Us installation.
 #+begin_src Powershell
 $downloaded = $false
@@ -180,6 +205,7 @@ Write-Host "<<< DONE cleaning
 #+end_src
 ** Optional: Creating shortcut
 Lastly you will be able to choose to add a shortcut to your desktop for easier Mod access.
+
 You can skip this process by typing "NO" or "no".
 #+begin_src Powershell
 Write-Host Do you want a desktop shortcut for your modded version?
