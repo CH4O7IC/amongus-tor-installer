@@ -45,7 +45,7 @@ Write-Host "<<< DONE copying
 "
 
 
-$repo = "Eisbison/TheOtherRoles"
+$repo = "TheOtherRolesAU/TheOtherRoles"
 $file = "TheOtherRoles.zip"
 $releases = "https://api.github.com/repos/$repo/releases"
 Write-Host '>>> Determining latest release'
