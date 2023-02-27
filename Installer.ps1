@@ -86,7 +86,7 @@ do {
 
     Write-Host '>>> Dowloading version ' $tag ' from repository ' $repo
     Write-Host ''
-    curl.exe -s -LO $download
+    curl.exe -LO $download
     Write-Host "<<< DONE downloading
     "
     try {
